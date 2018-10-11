@@ -13,20 +13,20 @@ import random
 from scipy.fftpack import fft
 
 class DataSpeech():
-	
-	
+
+
 	def __init__(self, path, type, LoadToMem = False, MemWavCount = 10000):
 		'''
 		初始化
 		参数：
 			path：数据存放位置根目录
 		'''
-		
+
 		system_type = plat.system() # 由于不同的系统的文件路径表示不一样，需要进行判断
-		
+
 		self.datapath = path; # 数据存放位置根目录
 		self.type = type # 数据类型，分为三种：训练集(train)、验证集(dev)、测试集(test)
-		
+
 		self.slash = ''
 		if(system_type == 'Windows'):
 			self.slash='\\' # 反斜杠
@@ -35,29 +35,29 @@ class DataSpeech():
 		else:
 			print('*[Message] Unknown System\n')
 			self.slash='/' # 正斜杠
-		
+
 		if(self.slash != self.datapath[-1]): # 在目录路径末尾增加斜杠
 			self.datapath = self.datapath + self.slash
-		
-		
+
+
 		self.dic_wavlist_thchs30 = {}
 		self.dic_symbollist_thchs30 = {}
 		self.dic_wavlist_stcmds = {}
 		self.dic_symbollist_stcmds = {}
-		
+
 		self.SymbolNum = 0 # 记录拼音符号数量
 		self.list_symbol = self.GetSymbolList() # 全部汉语拼音符号列表
 		self.list_wavnum=[] # wav文件标记列表
 		self.list_symbolnum=[] # symbol标记列表
-		
+
 		self.DataNum = 0 # 记录数据量
 		self.LoadDataList()
-		
+
 		self.wavs_data = []
 		self.LoadToMem = LoadToMem
 		self.MemWavCount = MemWavCount
 		pass
-	
+
 	def LoadDataList(self):
 		'''
 		加载用于计算的数据列表
@@ -89,11 +89,11 @@ class DataSpeech():
 		# 读取数据列表，wav文件列表和其对应的符号列表
 		self.dic_wavlist_thchs30,self.list_wavnum_thchs30 = get_wav_list(self.datapath + filename_wavlist_thchs30)
 		self.dic_wavlist_stcmds,self.list_wavnum_stcmds = get_wav_list(self.datapath + filename_wavlist_stcmds)
-		
+
 		self.dic_symbollist_thchs30,self.list_symbolnum_thchs30 = get_wav_symbol(self.datapath + filename_symbollist_thchs30)
 		self.dic_symbollist_stcmds,self.list_symbolnum_stcmds = get_wav_symbol(self.datapath + filename_symbollist_stcmds)
 		self.DataNum = self.GetDataNum()
-	
+
 	def GetDataNum(self):
 		'''
 		获取数据的数量
@@ -107,10 +107,10 @@ class DataSpeech():
 			DataNum = num_wavlist_thchs30 + num_wavlist_stcmds
 		else:
 			DataNum = -1
-		
+
 		return DataNum
-		
-		
+
+
 	def GetData(self,n_start,n_amount=1):
 		'''
 		读取数据，返回神经网络输入值和输出值矩阵(可直接用于神经网络训练的那种)
@@ -123,7 +123,7 @@ class DataSpeech():
 		bili = 2
 		if(self.type=='train'):
 			bili = 11
-			
+
 		# 读取一个文件
 		if(n_start % bili == 0):
 			filename = self.dic_wavlist_thchs30[self.list_wavnum_thchs30[n_start // bili]]
@@ -134,14 +134,14 @@ class DataSpeech():
 			length=len(self.list_wavnum_stcmds)
 			filename = self.dic_wavlist_stcmds[self.list_wavnum_stcmds[(n + yushu - 1)%length]]
 			list_symbol=self.dic_symbollist_stcmds[self.list_symbolnum_stcmds[(n + yushu - 1)%length]]
-		
+
 		if('Windows' == plat.system()):
 			filename = filename.replace('/','\\') # windows系统下需要执行这一行，对文件路径做特别处理
-		
+
 		wavsignal,fs=read_wav_data(self.datapath + filename)
-		
+
 		# 获取输出特征
-		
+
 		feat_out=[]
 		#print("数据编号",n_start,filename)
 		for i in list_symbol:
@@ -151,44 +151,44 @@ class DataSpeech():
 				#feat_out.append(v)
 				feat_out.append(n)
 		#print('feat_out:',feat_out)
-		#print('wavsignal:', wavsignal.shape)	
+		#print('wavsignal:', wavsignal.shape)
 		# 获取输入特征
 		data_input = GetFrequencyFeature3(wavsignal,fs)
 		#data_input = np.array(data_input)
 		data_input = data_input.reshape(data_input.shape[0],data_input.shape[1],1)
-		#print('data input reshape:', data_input.shape)	
+		#print('data input reshape:', data_input.shape)
 		#arr_zero = np.zeros((1, 39), dtype=np.int16) #一个全是0的行向量
-		
+
 		#while(len(data_input)<1600): #长度不够时补全到1600
 		#	data_input = np.row_stack((data_input,arr_zero))
-		
+
 		#data_input = data_input.T
 		data_label = np.array(feat_out)
 		return data_input, data_label
-	
+
 	def data_genetator(self, batch_size=32, audio_length = 1600):
 		'''
 		数据生成器函数，用于Keras的generator_fit训练
 		batch_size: 一次产生的数据量
 		需要再修改。。。
 		'''
-		
+
 		labels = []
 		for i in range(0,batch_size):
 			#input_length.append([1500])
 			labels.append([0.0])
-		
-		
-		
+
+
+
 		labels = np.array(labels, dtype = np.float)
-		
+
 		#print(input_length,len(input_length))
-		
+
 		while True:
 			X = np.zeros((batch_size, audio_length, 200, 1), dtype = np.float)
 			#y = np.zeros((batch_size, 64, self.SymbolNum), dtype=np.int16)
 			y = np.zeros((batch_size, 64), dtype=np.int16)
-			
+
 			#generator = ImageCaptcha(width=width, height=height)
 			input_length = []
 			label_length = []
@@ -198,9 +198,9 @@ class DataSpeech():
 				data_input, data_labels = self.GetData(ran_num)  # 通过随机数取一个数据
 				#data_input, data_labels = self.GetData((ran_num + i) % self.DataNum)  # 从随机数开始连续向后取一定数量数据
 				#print('audio_length', audio_length)
-				#if data_input.shape[0] * 1.62 > audio_length:
+				if data_input.shape[0] * 1.62 > audio_length:
 					#print('ignore:', data_input.shape)
-					#continue
+					continue
 				#lengthxx = min(data_input.shape[0], audio_length)
 				#data_input = data_input[:lengthxx, :, :]
 
@@ -221,7 +221,7 @@ class DataSpeech():
 				#print(i,y[i].shape)
 				label_length.append([len(data_labels)])
 				i+=1
-			
+
 			label_length = np.matrix(label_length)
 			input_length = np.array(input_length).T
 			#input_length = np.array(input_length)
@@ -229,7 +229,7 @@ class DataSpeech():
 			#X=X.reshape(batch_size, audio_length, 200, 1)
 			#print(X)
 			yield [X, y, input_length, label_length ], labels
-		
+
 	def GetSymbolList(self):
 		'''
 		加载拼音符号列表，用于标记符号
@@ -253,7 +253,7 @@ class DataSpeech():
 		获取拼音符号数量
 		'''
 		return len(self.list_symbol)
-		
+
 	def SymbolToNum(self,symbol):
 		'''
 		符号转为数字
@@ -261,7 +261,7 @@ class DataSpeech():
 		if(symbol != ''):
 			return self.list_symbol.index(symbol)
 		return self.SymbolNum
-	
+
 	def NumToVector(self,num):
 		'''
 		数字转为对应的向量
@@ -274,7 +274,7 @@ class DataSpeech():
 				v_tmp.append(0)
 		v=np.array(v_tmp)
 		return v
-	
+
 if(__name__=='__main__'):
 	#path='E:\\语音数据集'
 	#l=DataSpeech(path)
@@ -286,4 +286,4 @@ if(__name__=='__main__'):
 		#a,b=i
 	#print(a,b)
 	pass
-	
+
