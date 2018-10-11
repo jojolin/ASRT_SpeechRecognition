@@ -132,7 +132,7 @@ def GetFrequencyFeature3(wavsignal, fs):
 		
 		data_input[i]=data_line[0:200] # 设置为400除以2的值（即200）是取一半数据，因为是对称的
 		
-	#print(data_input.shape)
+	#print('get freq fea', data_input.shape)
 	data_input = np.log(data_input + 1)
 	return data_input
 

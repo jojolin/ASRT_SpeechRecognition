@@ -151,11 +151,12 @@ class DataSpeech():
 				#feat_out.append(v)
 				feat_out.append(n)
 		#print('feat_out:',feat_out)
-		
+		#print('wavsignal:', wavsignal.shape)	
 		# 获取输入特征
 		data_input = GetFrequencyFeature3(wavsignal,fs)
 		#data_input = np.array(data_input)
 		data_input = data_input.reshape(data_input.shape[0],data_input.shape[1],1)
+		#print('data input reshape:', data_input.shape)	
 		#arr_zero = np.zeros((1, 39), dtype=np.int16) #一个全是0的行向量
 		
 		#while(len(data_input)<1600): #长度不够时补全到1600
@@ -191,18 +192,26 @@ class DataSpeech():
 			#generator = ImageCaptcha(width=width, height=height)
 			input_length = []
 			label_length = []
-			
-			
-			
-			for i in range(batch_size):
+			i = 0
+			while i < batch_size:
 				ran_num = random.randint(0,self.DataNum - 1) # 获取一个随机数
 				data_input, data_labels = self.GetData(ran_num)  # 通过随机数取一个数据
 				#data_input, data_labels = self.GetData((ran_num + i) % self.DataNum)  # 从随机数开始连续向后取一定数量数据
-				
+				#print('audio_length', audio_length)
+				#if data_input.shape[0] * 1.62 > audio_length:
+					#print('ignore:', data_input.shape)
+					#continue
+				#lengthxx = min(data_input.shape[0], audio_length)
+				#data_input = data_input[:lengthxx, :, :]
+
 				input_length.append(data_input.shape[0] // 8 + data_input.shape[0] % 8)
 				#print(data_input, data_labels)
 				#print('data_input长度:',len(data_input))
-				
+				#print('data_input', data_input.shape)
+				#print('data_labels', data_labels, 'len',  len(data_labels))
+				#lengthxx = min(data_input.shape[0], audio_length)
+				#X[i,0:lengthxx] = data_input[:lengthxx,:,:]
+				#X[i,0:lengthxx] = data_input
 				X[i,0:len(data_input)] = data_input
 				#print('data_labels长度:',len(data_labels))
 				#print(data_labels)
@@ -211,6 +220,7 @@ class DataSpeech():
 				#y[i] = y[i].T
 				#print(i,y[i].shape)
 				label_length.append([len(data_labels)])
+				i+=1
 			
 			label_length = np.matrix(label_length)
 			input_length = np.array(input_length).T
@@ -219,7 +229,6 @@ class DataSpeech():
 			#X=X.reshape(batch_size, audio_length, 200, 1)
 			#print(X)
 			yield [X, y, input_length, label_length ], labels
-		pass
 		
 	def GetSymbolList(self):
 		'''

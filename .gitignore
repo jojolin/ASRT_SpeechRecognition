@@ -1,7 +1,7 @@
 ## Ignore some files and folders for copyright and other reasons. 
 
 *.model
-[Mm]odel_speech/
+[Mm]odel_speech/m251
 
 __pycache__
 *.wav
@@ -14,3 +14,4 @@ data_pinyin.txt
 testClient.py
 
 webapi/
+*.log
