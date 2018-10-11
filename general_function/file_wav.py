@@ -4,7 +4,7 @@
 import os
 import wave
 import numpy as np
-import matplotlib.pyplot as plt  
+#import matplotlib.pyplot as plt
 import math
 import time
 
@@ -28,8 +28,8 @@ def read_wav_data(filename):
 	wave_data = np.fromstring(str_data, dtype = np.short) # 将声音文件数据转换为数组矩阵形式
 	wave_data.shape = -1, num_channel # 按照声道数将数组整形，单声道时候是一列数组，双声道时候是两列的矩阵
 	wave_data = wave_data.T # 将矩阵转置
-	#wave_data = wave_data 
-	return wave_data, framerate  
+	#wave_data = wave_data
+	return wave_data, framerate
 
 def GetMfccFeature(wavsignal, fs):
 	# 获取输入特征
@@ -44,7 +44,7 @@ def GetFrequencyFeature(wavsignal, fs):
 	# wav波形 加时间窗以及时移10ms
 	time_window = 25 # 单位ms
 	data_input = []
-	
+
 	#print(int(len(wavsignal[0])/fs*1000 - time_window) // 10)
 	wav_length = len(wavsignal[0]) # 计算一条语音信号的原始长度
 	range0_end = int(len(wavsignal[0])/fs*1000 - time_window) // 10 # 计算循环终止的位置，也就是最终生成的窗数
@@ -52,20 +52,20 @@ def GetFrequencyFeature(wavsignal, fs):
 		p_start = i * 160
 		p_end = p_start + 400
 		data_line = []
-		
+
 		for j in range(p_start, p_end):
-			data_line.append(wavsignal[0][j]) 
+			data_line.append(wavsignal[0][j])
 			#print('wavsignal[0][j]:\n',wavsignal[0][j])
 		#data_line = abs(fft(data_line)) / len(wavsignal[0])
 		data_line = fft(data_line) / wav_length
 		data_line2 = []
-		for fre_sig in data_line: 
+		for fre_sig in data_line:
 			# 分别取出频率信号的实部和虚部作为语音信号的频率特征
 			# 直接使用复数的话，之后会被numpy将虚部丢弃，造成信息丢失
 			#print('fre_sig:\n',fre_sig)
 			data_line2.append(fre_sig.real)
 			data_line2.append(fre_sig.imag)
-		
+
 		data_input.append(data_line2[0:len(data_line2)//2]) # 除以2是取一半数据，因为是对称的
 		#print('data_input:\n',data_input)
 		#print('data_line:\n',data_line)
@@ -76,18 +76,18 @@ def GetFrequencyFeature2(wavsignal, fs):
 	# wav波形 加时间窗以及时移10ms
 	time_window = 25 # 单位ms
 	window_length = fs / 1000 * time_window # 计算窗长度的公式，目前全部为400固定值
-	
+
 	wav_arr = np.array(wavsignal)
 	#wav_length = len(wavsignal[0])
 	wav_length = wav_arr.shape[1]
-	
+
 	range0_end = int(len(wavsignal[0])/fs*1000 - time_window) // 10 # 计算循环终止的位置，也就是最终生成的窗数
 	data_input = np.zeros((range0_end, 200), dtype = np.float) # 用于存放最终的频率特征数据
 	data_line = np.zeros((1, 400), dtype = np.float)
 	for i in range(0, range0_end):
 		p_start = i * 160
 		p_end = p_start + 400
-		
+
 		data_line = wav_arr[0, p_start:p_end]
 		'''
 		x=np.linspace(0, 400 - 1, 400, dtype = np.int64)
@@ -95,10 +95,10 @@ def GetFrequencyFeature2(wavsignal, fs):
 		data_line = data_line * w # 加窗
 		'''
 		data_line = np.abs(fft(data_line)) / wav_length
-		
-		
+
+
 		data_input[i]=data_line[0:200] # 设置为400除以2的值（即200）是取一半数据，因为是对称的
-		
+
 	#print(data_input.shape)
 	return data_input
 
@@ -110,28 +110,28 @@ def GetFrequencyFeature3(wavsignal, fs):
 	# wav波形 加时间窗以及时移10ms
 	time_window = 25 # 单位ms
 	window_length = fs / 1000 * time_window # 计算窗长度的公式，目前全部为400固定值
-	
+
 	wav_arr = np.array(wavsignal)
 	#wav_length = len(wavsignal[0])
 	wav_length = wav_arr.shape[1]
-	
+
 	range0_end = int(len(wavsignal[0])/fs*1000 - time_window) // 10 # 计算循环终止的位置，也就是最终生成的窗数
 	data_input = np.zeros((range0_end, 200), dtype = np.float) # 用于存放最终的频率特征数据
 	data_line = np.zeros((1, 400), dtype = np.float)
-	
+
 	for i in range(0, range0_end):
 		p_start = i * 160
 		p_end = p_start + 400
-		
+
 		data_line = wav_arr[0, p_start:p_end]
-		
+
 		data_line = data_line * w # 加窗
-		
+
 		data_line = np.abs(fft(data_line)) / wav_length
-		
-		
+
+
 		data_input[i]=data_line[0:200] # 设置为400除以2的值（即200）是取一半数据，因为是对称的
-		
+
 	#print('get freq fea', data_input.shape)
 	data_input = np.log(data_input + 1)
 	return data_input
@@ -164,17 +164,17 @@ def wav_scale3(energy):
 		#if i == 1:
 		#	#print('wavsignal[0]:\n {:.4f}'.format(energy[1]),energy[1] is int)
 	return energy
-	
+
 def wav_show(wave_data, fs): # 显示出来声音波形
 	time = np.arange(0, len(wave_data)) * (1.0/fs)  # 计算声音的播放时间，单位为秒
 	# 画声音波形
-	#plt.subplot(211)  
-	plt.plot(time, wave_data)  
-	#plt.subplot(212)  
-	#plt.plot(time, wave_data[1], c = "g")  
-	plt.show()  
+	#plt.subplot(211)
+	plt.plot(time, wave_data)
+	#plt.subplot(212)
+	#plt.plot(time, wave_data[1], c = "g")
+	plt.show()
 
-	
+
 def get_wav_list(filename):
 	'''
 	读取一个wav文件列表，返回一个存储该列表的字典类型值
@@ -192,7 +192,7 @@ def get_wav_list(filename):
 			list_wavmark.append(txt_l[0])
 	txt_obj.close()
 	return dic_filelist,list_wavmark
-	
+
 def get_wav_symbol(filename):
 	'''
 	读取指定数据集中，所有wav文件对应的语音符号
@@ -210,21 +210,21 @@ def get_wav_symbol(filename):
 			list_symbolmark.append(txt_l[0])
 	txt_obj.close()
 	return dic_symbol_list,list_symbolmark
-	
+
 if(__name__=='__main__'):
-	
-	wave_data, fs = read_wav_data("A2_0.wav")  
-	
+
+	wave_data, fs = read_wav_data("A2_0.wav")
+
 	wav_show(wave_data[0],fs)
 	t0=time.time()
 	freimg = GetFrequencyFeature3(wave_data,fs)
 	t1=time.time()
 	print('time cost:',t1-t0)
-	
+
 	freimg = freimg.T
 	plt.subplot(111)
-	
+
 	plt.imshow(freimg)
-	plt.colorbar(cax=None,ax=None,shrink=0.5)  
-	 
-	plt.show() 
+	plt.colorbar(cax=None,ax=None,shrink=0.5)
+
+	plt.show()
