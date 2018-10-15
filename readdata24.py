@@ -139,23 +139,22 @@ class DataSpeech():
 			filename = filename.replace('/','\\') # windows系统下需要执行这一行，对文件路径做特别处理
 
 		wavsignal,fs=read_wav_data(self.datapath + filename)
-
 		# 获取输出特征
-
 		feat_out=[]
 		#print("数据编号",n_start,filename)
 		for i in list_symbol:
-			if(''!=i):
+			if ''!=i:
 				n=self.SymbolToNum(i)
 				#v=self.NumToVector(n)
 				#feat_out.append(v)
 				feat_out.append(n)
+
 		#print('feat_out:',feat_out)
 		#print('wavsignal:', wavsignal.shape)
 		# 获取输入特征
 		data_input = GetFrequencyFeature3(wavsignal,fs)
 		#data_input = np.array(data_input)
-		data_input = data_input.reshape(data_input.shape[0],data_input.shape[1],1)
+		data_input = data_input.reshape(data_input.shape[0], data_input.shape[1], 1)
 		#print('data input reshape:', data_input.shape)
 		#arr_zero = np.zeros((1, 39), dtype=np.int16) #一个全是0的行向量
 
@@ -172,23 +171,16 @@ class DataSpeech():
 		batch_size: 一次产生的数据量
 		需要再修改。。。
 		'''
-
 		labels = []
 		for i in range(0,batch_size):
 			#input_length.append([1500])
 			labels.append([0.0])
-
-
-
 		labels = np.array(labels, dtype = np.float)
-
 		#print(input_length,len(input_length))
-
 		while True:
 			X = np.zeros((batch_size, audio_length, 200, 1), dtype = np.float)
 			#y = np.zeros((batch_size, 64, self.SymbolNum), dtype=np.int16)
 			y = np.zeros((batch_size, 64), dtype=np.int16)
-
 			#generator = ImageCaptcha(width=width, height=height)
 			input_length = []
 			label_length = []
@@ -198,12 +190,11 @@ class DataSpeech():
 				data_input, data_labels = self.GetData(ran_num)  # 通过随机数取一个数据
 				#data_input, data_labels = self.GetData((ran_num + i) % self.DataNum)  # 从随机数开始连续向后取一定数量数据
 				#print('audio_length', audio_length)
-				if data_input.shape[0] * 1.62 > audio_length:
+				if data_input.shape[0] * 1.2 > audio_length:
 					#print('ignore:', data_input.shape)
 					continue
 				#lengthxx = min(data_input.shape[0], audio_length)
 				#data_input = data_input[:lengthxx, :, :]
-
 				input_length.append(data_input.shape[0] // 8 + data_input.shape[0] % 8)
 				#print(data_input, data_labels)
 				#print('data_input长度:',len(data_input))

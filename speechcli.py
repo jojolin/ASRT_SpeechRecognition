@@ -17,8 +17,8 @@ modelpath = 'model_speech/'
 ms = ModelSpeech(datapath)
 ms.LoadModel(model)
 
-ml = ModelLanguage('model_language')
-ml.LoadModel()
+#ml = ModelLanguage('model_language')
+#ml.LoadModel()
 
 pinyin = ms.RecognizeSpeech_FromFile(sound_fp)
 print('*[提示] 语音识别结果：\n',pinyin)

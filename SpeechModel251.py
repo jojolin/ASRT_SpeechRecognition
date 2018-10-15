@@ -17,7 +17,7 @@ import numpy as np
 import random
 
 from keras.models import Sequential, Model
-from keras.layers import Dense, Dropout, Input, Reshape, BatchNormalization # , Flatten
+from keras.layers import Dense, Dropout, Input, Reshape, BatchNormalization, Flatten
 from keras.layers import Lambda, TimeDistributed, Activation,Conv2D, MaxPooling2D #, Merge
 from keras import backend as K
 from keras.optimizers import SGD, Adadelta, Adam
@@ -34,11 +34,9 @@ class ModelSpeech(): # 语音模型类
 		初始化
 		默认输出的拼音的表示大小是1422，即1421个拼音+1个空白块
 		'''
-		MS_OUTPUT_SIZE = 1422
-		self.MS_OUTPUT_SIZE = MS_OUTPUT_SIZE # 神经网络最终输出的每一个字符向量维度的大小
-		#self.BATCH_SIZE = BATCH_SIZE # 一次训练的batch
+		self.MS_OUTPUT_SIZE = 1422 #拼音类别是1421个，加上一个空白块，将output_dim设置为1422即可
 		self.label_max_string_length = 64
-		self.AUDIO_LENGTH = 1200
+		self.AUDIO_LENGTH = 1000
 		self.AUDIO_FEATURE_LENGTH = 200
 		self._model, self.base_model = self.CreateModel()
 
@@ -93,29 +91,37 @@ class ModelSpeech(): # 语音模型类
 		layer_h12 = MaxPooling2D(pool_size=1, strides=None, padding="valid")(layer_h11) # 池化层
 
 		#layer_h12 = Dropout(0.2)(layer_h12)
-		layer_h12 = Dropout(0.2)(layer_h9)
-		layer_h13 = Conv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h12) # 卷积层
-		layer_h13 = Dropout(0.2)(layer_h13)
-		layer_h14 = Conv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h13) # 卷积层
-		layer_h15 = MaxPooling2D(pool_size=1, strides=None, padding="valid")(layer_h14) # 池化层
-		print('layer_h15', layer_h15)
+		#layer_h13 = Conv2D(16, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h12) # 卷积层
+		#layer_h13 = Dropout(0.2)(layer_h13)
+		#layer_h14 = Conv2D(16, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h13) # 卷积层
+		#layer_h15 = MaxPooling2D(pool_size=1, strides=None, padding="valid")(layer_h14) # 池化层
+
+		#layer_h15 = Dropout(0.2)(layer_h15)
+		#layer_h15 = Conv2D(8, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h15) # 卷积层
+		#layer_h15 = Dropout(0.2)(layer_h15)
+		#layer_h15 = Conv2D(8, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h15) # 卷积层
+		#layer_h15 = MaxPooling2D(pool_size=1, strides=None, padding="valid")(layer_h15) # 池化层
+		#print('layer_h15', layer_h15)
 
 		#test=Model(inputs = input_data, outputs = layer_h12)
 		#test.summary()
 
 		#layer_h16 = Reshape((200, 3200))(layer_h15) #Reshape层
-		layer_h16 = Reshape((150, 800))(layer_h15) #Reshape层
-
+		print('layer_h12', layer_h12)
+		layer_h16 = Reshape((125, 800))(layer_h12) #Reshape层
+		#layer_h16 = Flatten()(layer_h12) #Reshape层
+		print('layer_h16:', layer_h16)
 		#layer_h5 = LSTM(256, activation='relu', use_bias=True, return_sequences=True)(layer_h4) # LSTM层
-		#layer_h6 = Dropout(0.2)(layer_h5) # 随机中断部分神经网络连接，防止过拟合
-		layer_h16 = Dropout(0.3)(layer_h16)
-		layer_h17 = Dense(32, activation="relu", use_bias=True, kernel_initializer='he_normal')(layer_h16) # 全连接层
-		layer_h17 = Dropout(0.3)(layer_h17)
+		#layer_h16 = Dropout(0.3)(layer_h16)
+		#layer_h17 = Dense(32, activation="relu", use_bias=True, kernel_initializer='he_normal')(layer_h16) # 全连接层
+
+		layer_h17 = Dropout(0.3)(layer_h16)
 		layer_h18 = Dense(self.MS_OUTPUT_SIZE, use_bias=True, kernel_initializer='he_normal')(layer_h17) # 全连接层
 
 		y_pred = Activation('softmax', name='Activation0')(layer_h18)
+		print('y_pred', y_pred)
 		model_data = Model(inputs = input_data, outputs = y_pred)
-		#model_data.summary()
+		model_data.summary()
 
 		labels = Input(name='the_labels', shape=[self.label_max_string_length], dtype='float32')
 		input_length = Input(name='input_length', shape=[1], dtype='int64')
@@ -126,10 +132,7 @@ class ModelSpeech(): # 语音模型类
 		#layer_out = Lambda(ctc_lambda_func,output_shape=(self.MS_OUTPUT_SIZE, ), name='ctc')([y_pred, labels, input_length, label_length])#(layer_h6) # CTC
 		loss_out = Lambda(self.ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_length, label_length])
 
-
-
 		model = Model(inputs=[input_data, labels, input_length, label_length], outputs=loss_out)
-
 		model.summary()
 
 		# clipnorm seems to speeds up convergence
@@ -138,7 +141,6 @@ class ModelSpeech(): # 语音模型类
 		opt = Adam(lr = 0.001, beta_1 = 0.9, beta_2 = 0.999, decay = 0.0, epsilon = 10e-8)
 		#model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
 		model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer = opt)
-
 
 		# captures output of softmax so we can decode the output during visualization
 		test_func = K.function([input_data], [y_pred])
@@ -151,6 +153,7 @@ class ModelSpeech(): # 语音模型类
 		y_pred, labels, input_length, label_length = args
 
 		y_pred = y_pred[:, :, :]
+		print(y_pred)
 		#y_pred = y_pred[:, 2:, :]
 		return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
 
@@ -240,14 +243,12 @@ class ModelSpeech(): # 语音模型类
 			for i in range(data_count):
 				data_input, data_labels = data.GetData((ran_num + i) % num_data)  # 从随机数开始连续向后取一定数量数据
 
-				# 数据格式出错处理 开始
 				# 当输入的wav文件长度过长时自动跳过该文件，转而使用下一个wav文件来运行
 				num_bias = 0
 				while(data_input.shape[0] > self.AUDIO_LENGTH):
-					print('*[Error]','wave data lenghth of num',(ran_num + i) % num_data, 'is too long.','\n A Exception raise when test Speech Model.')
+					print('*[Error]','wave data', data_input.shape, 'is too long.','\n A Exception raise when test Speech Model.')
 					num_bias += 1
 					data_input, data_labels = data.GetData((ran_num + i + num_bias) % num_data)  # 从随机数开始连续向后取一定数量数据
-				# 数据格式出错处理 结束
 
 				pre = self.Predict(data_input, data_input.shape[0] // 8)
 
@@ -273,8 +274,6 @@ class ModelSpeech(): # 语音模型类
 					txt += 'True:\t' + str(data_labels) + '\n'
 					txt += 'Pred:\t' + str(pre) + '\n'
 					txt += '\n'
-
-
 
 			#print('*[测试结果] 语音识别 ' + str_dataset + ' 集语音单字错误率：', word_error_num / words_num * 100, '%')
 			print('*[Test Result] Speech Recognition ' + str_dataset + ' set word error ratio: ', word_error_num / words_num * 100, '%')
@@ -379,16 +378,9 @@ class ModelSpeech(): # 语音模型类
 		'''
 		最终做语音识别用的函数，识别指定文件名的语音
 		'''
-
 		wavsignal,fs = read_wav_data(filename)
-
 		r = self.RecognizeSpeech(wavsignal, fs)
-
 		return r
-
-		pass
-
-
 
 	@property
 	def model(self):

@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import sys
 import os
 import wave
 import numpy as np
 #import matplotlib.pyplot as plt
 import math
 import time
+from .logutil import logd
 
 from python_speech_features import mfcc
 from python_speech_features import delta
@@ -116,20 +118,16 @@ def GetFrequencyFeature3(wavsignal, fs):
 	wav_length = wav_arr.shape[1]
 
 	range0_end = int(len(wavsignal[0])/fs*1000 - time_window) // 10 # 计算循环终止的位置，也就是最终生成的窗数
+	logd('range0_end:', range0_end)
 	data_input = np.zeros((range0_end, 200), dtype = np.float) # 用于存放最终的频率特征数据
 	data_line = np.zeros((1, 400), dtype = np.float)
 
 	for i in range(0, range0_end):
 		p_start = i * 160
 		p_end = p_start + 400
-
 		data_line = wav_arr[0, p_start:p_end]
-
 		data_line = data_line * w # 加窗
-
 		data_line = np.abs(fft(data_line)) / wav_length
-
-
 		data_input[i]=data_line[0:200] # 设置为400除以2的值（即200）是取一半数据，因为是对称的
 
 	#print('get freq fea', data_input.shape)
@@ -212,19 +210,13 @@ def get_wav_symbol(filename):
 	return dic_symbol_list,list_symbolmark
 
 if(__name__=='__main__'):
-
-	wave_data, fs = read_wav_data("A2_0.wav")
-
-	wav_show(wave_data[0],fs)
-	t0=time.time()
-	freimg = GetFrequencyFeature3(wave_data,fs)
-	t1=time.time()
-	print('time cost:',t1-t0)
-
-	freimg = freimg.T
-	plt.subplot(111)
-
-	plt.imshow(freimg)
-	plt.colorbar(cax=None,ax=None,shrink=0.5)
-
-	plt.show()
+	wave_data, fs = read_wav_data(sys.argv[1])
+	#wav_show(wave_data[0],fs)
+	feature = GetFrequencyFeature3(wave_data,fs)
+	logd(feature.shape)
+	logd(len(feature))
+	freimg = feature.T
+	#plt.subplot(111)
+	#plt.imshow(freimg)
+	#plt.colorbar(cax=None,ax=None,shrink=0.5)
+	#plt.show()
