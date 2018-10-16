@@ -8,7 +8,7 @@ import numpy as np
 #import matplotlib.pyplot as plt
 import math
 import time
-from logutil import logd
+from .logutil import logd
 
 from python_speech_features import mfcc
 from python_speech_features import delta
@@ -33,9 +33,9 @@ def read_wav_data(filename):
     #wave_data = wave_data
     return wave_data, framerate
 
-def GetMfccFeature(wavsignal, fs, numcep=200):
+def GetMfccFeature(wavsignal, fs, numcep=100):
     # 获取输入特征
-    feat_mfcc=mfcc(wavsignal[0],fs, numcep=200,nfilt=numcep*2)
+    feat_mfcc=mfcc(wavsignal[0],fs, numcep=numcep,nfilt=numcep*2)
     return feat_mfcc
     feat_mfcc_d=delta(feat_mfcc,2)
     feat_mfcc_dd=delta(feat_mfcc_d,2)
