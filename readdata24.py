@@ -11,6 +11,7 @@ from general_function.file_dict import *
 import random
 #import scipy.io.wavfile as wav
 from scipy.fftpack import fft
+import config
 
 class DataSpeech():
 
@@ -152,7 +153,7 @@ class DataSpeech():
                 #print('feat_out:',feat_out)
                 #print('wavsignal:', wavsignal.shape)
                 # 获取输入特征
-                data_input = GetMfccFeature(wavsignal,fs)
+                data_input = GetMfccFeature(wavsignal,fs, numcep=config.AUDIO_FEATURE_LENGTH)
                 #data_input = GetFrequencyFeature3(wavsignal,fs)
                 #data_input = np.array(data_input)
                 data_input = data_input.reshape(data_input.shape[0], data_input.shape[1], 1)
@@ -179,7 +180,7 @@ class DataSpeech():
                 labels = np.array(labels, dtype = np.float)
                 #print(input_length,len(input_length))
                 while True:
-                        X = np.zeros((batch_size, audio_length, 100, 1), dtype = np.float)
+                        X = np.zeros((batch_size, audio_length, config.AUDIO_FEATURE_LENGTH, 1), dtype = np.float)
                         #y = np.zeros((batch_size, 64, self.SymbolNum), dtype=np.int16)
                         y = np.zeros((batch_size, 64), dtype=np.int16)
                         #generator = ImageCaptcha(width=width, height=height)

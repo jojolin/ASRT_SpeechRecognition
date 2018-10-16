@@ -68,15 +68,15 @@ class ModelSpeech(): # 语音模型类
 
         input_data = Input(name='the_input', shape=(self.AUDIO_LENGTH, self.AUDIO_FEATURE_LENGTH, 1))
 
-        layer_h1 = Conv2D(64, (3,3), use_bias=False, activation='relu', padding='same', kernel_initializer='he_normal')(input_data) # 卷积层
+        layer_h1 = Conv2D(32, (2,2), use_bias=False, activation='relu', padding='same', kernel_initializer='he_normal')(input_data) # 卷积层
         layer_h1 = Dropout(0.05)(layer_h1)
-        layer_h2 = Conv2D(64, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h1) # 卷积层
+        layer_h2 = Conv2D(32, (2,2), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h1) # 卷积层
         layer_h3 = MaxPooling2D(pool_size=2, strides=None, padding="valid")(layer_h2) # 池化层
 
         layer_h3 = Dropout(0.05)(layer_h3)
-        layer_h4 = Conv2D(128, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h3) # 卷积层
+        layer_h4 = Conv2D(32, (2,2), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h3) # 卷积层
         layer_h4 = Dropout(0.1)(layer_h4)
-        layer_h5 = Conv2D(128, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h4) # 卷积层
+        layer_h5 = Conv2D(32, (2,2), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h4) # 卷积层
         layer_h6 = MaxPooling2D(pool_size=2, strides=None, padding="valid")(layer_h5) # 池化层
 
         layer_h6 = Dropout(0.1)(layer_h6)
@@ -89,7 +89,7 @@ class ModelSpeech(): # 语音模型类
         layer_h10 = Conv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h9) # 卷积层
         layer_h10 = Dropout(0.2)(layer_h10)
         layer_h11 = Conv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h10) # 卷积层
-        layer_h12 = MaxPooling2D(pool_size=1, strides=None, padding="valid")(layer_h11) # 池化层
+        layer_h12 = MaxPooling2D(pool_size=2, strides=None, padding="valid")(layer_h11) # 池化层
 
         #layer_h12 = Dropout(0.2)(layer_h12)
         #layer_h13 = Conv2D(16, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h12) # 卷积层
@@ -108,17 +108,18 @@ class ModelSpeech(): # 语音模型类
         #test.summary()
 
         #layer_h16 = Reshape((200, 3200))(layer_h15) #Reshape层
-        print('layer_h12', layer_h12)
-        layer_h16 = Reshape((layer_h12.shape[1], layer_h12.shape[2]* layer_h12.shape[3]))(layer_h12) #Reshape层
+        layerx = layer_h12
+        print('layerx', layerx)
+        layer_h16 = Reshape((layerx.shape[1], layerx.shape[2]* layerx.shape[3]))(layerx) #Reshape层
         #layer_h16 = Reshape((125, 800))(layer_h12) #Reshape层
         #layer_h16 = Flatten()(layer_h12) #Reshape层
         print('layer_h16:', layer_h16)
         #layer_h5 = LSTM(256, activation='relu', use_bias=True, return_sequences=True)(layer_h4) # LSTM层
         #layer_h16 = Dropout(0.3)(layer_h16)
         #layer_h17 = Dense(32, activation="relu", use_bias=True, kernel_initializer='he_normal')(layer_h16) # 全连接层
+        #layer_h17 = Dropout(0.3)(layer_h16)
 
-        layer_h17 = Dropout(0.3)(layer_h16)
-        layer_h18 = Dense(self.MS_OUTPUT_SIZE, use_bias=True, kernel_initializer='he_normal')(layer_h17) # 全连接层
+        layer_h18 = Dense(self.MS_OUTPUT_SIZE, use_bias=True, kernel_initializer='he_normal')(layer_h16) # 全连接层
 
         y_pred = Activation('softmax', name='Activation0')(layer_h18)
         print('y_pred', y_pred)
