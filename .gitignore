@@ -2,6 +2,7 @@
 
 *.model
 [Mm]odel_speech/m251
+[Mm]odel_speech/
 
 __pycache__
 *.wav

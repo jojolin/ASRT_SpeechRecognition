@@ -374,13 +374,18 @@ class ModelSpeech(): # 语音模型类
 		return r_str
 		pass
 
-	def RecognizeSpeech_FromFile(self, filename):
+	def RecognizeSpeech_FromFile(self, *fps):
 		'''
 		最终做语音识别用的函数，识别指定文件名的语音
 		'''
-		wavsignal,fs = read_wav_data(filename)
-		r = self.RecognizeSpeech(wavsignal, fs)
-		return r
+		res = []
+		for filename in fps:
+			wavsignal,fs = read_wav_data(filename)
+			print('read time: ', time.time())
+			r = self.RecognizeSpeech(wavsignal, fs)
+			print('reco time: ', time.time())
+			res.append(r)
+		return res
 
 	@property
 	def model(self):
