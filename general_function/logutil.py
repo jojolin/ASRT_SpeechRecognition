@@ -1,4 +1,4 @@
 def logd(*obj):
-	#print(*obj)
+	print(*obj)
 	pass
 
