@@ -12,15 +12,15 @@ from general_function.file_dict import *
 from general_function.gen_func import *
 
 # LSTM_CNN
-import keras as kr
 import numpy as np
 import random
+import tensorflow.keras as keras
 
-from keras.models import Sequential, Model
-from keras.layers import Dense, Dropout, Input, Reshape, BatchNormalization, Flatten
-from keras.layers import Lambda, TimeDistributed, Activation,Conv2D, MaxPooling2D #, Merge
-from keras import backend as K
-from keras.optimizers import SGD, Adadelta, Adam
+from tensorflow.keras.models import Sequential, Model
+from tensorflow.keras.layers import Dense, Dropout, Input, Reshape, BatchNormalization, Flatten
+from tensorflow.keras.layers import Lambda, TimeDistributed, Activation,Conv2D, MaxPooling2D #, Merge
+from tensorflow.keras import backend as K
+from tensorflow.keras.optimizers import SGD, Adadelta, Adam
 
 from readdata24 import DataSpeech
 
@@ -398,11 +398,11 @@ if(__name__=='__main__'):
 	#进行配置，使用70%的GPU
 	#config = tf.ConfigProto()
 	#config.gpu_options.per_process_gpu_memory_fraction = 0.95
-	#config.gpu_options.allow_growth=True   #不全部占满显存, 按需分配
+	#config.gpu_options.allow_growth=True	#不全部占满显存, 按需分配
 	#set_session(tf.Session(config=config))
 
 
-	datapath =  abspath + ''
+	datapath =	abspath + ''
 	modelpath =  abspath + 'model_speech'
 
 
@@ -414,7 +414,7 @@ if(__name__=='__main__'):
 		datapath = 'E:\\语音数据集'
 		modelpath = modelpath + '\\'
 	elif(system_type == 'Linux'):
-		datapath =  abspath + 'dataset'
+		datapath =	abspath + 'dataset'
 		modelpath = modelpath + '/'
 	else:
 		print('*[Message] Unknown System\n')
