@@ -6,7 +6,7 @@ from xpinyin import Pinyin
 
 audio_files = ""
 
-audio_files_fp = "./audio_files"
+audio_files_fp = "audio_files"
 set1_transcript_fp = 'set1_transcript.json'
 
 
@@ -38,7 +38,9 @@ def parse_set1_transcript():
 		for wavobj in transcript_json:
 			text_py =  py.get_pinyin(wavobj['text'].replace(" ", ''), ' ', tone_marks='numbers')
 			#print(text_py, wavobj['text'].encode('utf8'), wavobj['file'])
-			savef.write(text_py.encode('utf8') + "###" + wavobj['text'].encode('utf8') + '###' + wavindex.get(wavobj['file'], "NOTFOUND") + '\n')
+			savef.write(text_py.encode('utf8')
+				+ "###" + wavobj['text'].encode('utf8')
+				+ '###' + "primewords_md_2018_set1/" + wavindex.get(wavobj['file']) + '\n')
 			cnt += 1
 			if cnt % flush == 0:
 				savef.flush()

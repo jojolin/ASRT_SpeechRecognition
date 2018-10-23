@@ -66,10 +66,10 @@ class DataSetManager(object):
             syllable = syllable_index[tag]
 
             # TODO: debug
-            #data_input = np.random.random((300, config.AUDIO_FEATURE_LENGTH))
+            data_input = np.random.random((300, config.AUDIO_FEATURE_LENGTH))
             print(wavfp)
-            wavsignal, fs = read_wav_data(wavfp)
-            data_input = GetMfccFeature(wavsignal, fs, numcep=config.AUDIO_MFCC_FEATURE_LENGTH)
+            #wavsignal, fs = read_wav_data(wavfp)
+            #data_input = GetMfccFeature(wavsignal, fs, numcep=config.AUDIO_MFCC_FEATURE_LENGTH)
             #print(wavfp)
             data_input = data_input.reshape(data_input.shape[0], data_input.shape[1], 1)
             # 获取输入特征
@@ -181,11 +181,11 @@ if __name__ == '__main__':
     manager = DataSetManager()
     # manager.load_stcmd()
     #manager.load_primewords()
-    wav_index, syllable_index =  manager.load_thchs30()
-    for x in manager.dataset_generator(wav_index, syllable_index):
-         print(x)
+    #wav_index, syllable_index =  manager.load_thchs30()
+    #for x in manager.dataset_generator(wav_index, syllable_index):
+    #     print(x)
 
     # test
-    #data_gen = manager.data_generator()
-    #print(next(data_gen)[1])
+    data_gen = manager.data_generator()
+    print(len(next(data_gen)[1]))
     #print(next(data_gen)[1])
