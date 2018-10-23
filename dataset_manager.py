@@ -72,7 +72,11 @@ class DataSetManager(object):
             data_input = GetMfccFeature(wavsignal, fs, numcep=config.AUDIO_MFCC_FEATURE_LENGTH)
             data_input = data_input.reshape(data_input.shape[0], data_input.shape[1], 1)
             # 获取输入特征
-            syllable_num = list(map(self.get_symbol_num, syllable))
+            try:
+                syllable_num = list(map(self.get_symbol_num, syllable))
+            except ValueError as ex:
+                print(ex)
+                continue
             yield data_input, np.array(syllable_num)
 
     def read_data(self):
