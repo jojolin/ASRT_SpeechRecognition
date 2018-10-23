@@ -22,4 +22,3 @@ def GetSymbolList(datapath):
 	list_symbol.append('_')
 	#SymbolNum = len(list_symbol)
 	return list_symbol
-	

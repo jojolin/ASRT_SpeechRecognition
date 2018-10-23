@@ -9,10 +9,12 @@ __pycache__
 *.model_yaml
 Test_Report_*
 
-dataset
 data_pinyin.txt
 
 testClient.py
 
 webapi/
 *.log
+
+speech.tfkeras.h5
+speech.tfkeras.h5.tflite
