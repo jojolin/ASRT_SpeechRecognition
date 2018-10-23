@@ -36,12 +36,10 @@ def read_wav_data(filename):
 def GetMfccFeature(wavsignal, fs, numcep=100):
     # 获取输入特征
     feat_mfcc=mfcc(wavsignal[0],fs, numcep=numcep,nfilt=numcep*2)
-    return feat_mfcc
     feat_mfcc_d=delta(feat_mfcc,2)
     feat_mfcc_dd=delta(feat_mfcc_d,2)
     # 返回值分别是mfcc特征向量的矩阵及其一阶差分和二阶差分矩阵
     wav_feature = np.column_stack((feat_mfcc, feat_mfcc_d, feat_mfcc_dd))
-    logd('feat_mfcc:', feat_mfcc.shape)
     return wav_feature
 
 def GetFrequencyFeature(wavsignal, fs):

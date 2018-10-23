@@ -4,8 +4,8 @@ import time
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Model, Sequential
-from tensorflow.keras.layers import Dense, Input, Conv2D, Dropout, MaxPooling2D, Reshape, Activation,Flatten, Conv3D, MaxPooling3D, \
-    Lambda
+from tensorflow.keras.layers import Dense, Input, SeparableConv2D, Dropout, MaxPooling2D, Reshape, Activation,Flatten, Conv3D, MaxPooling3D, \
+    Lambda 
 from tensorflow.keras.optimizers import SGD, Adadelta, Adam
 from tensorflow.keras import backend as K
 
@@ -20,37 +20,38 @@ class SpeechModel(object):
 
         input_data = Input(name='the_input', shape=(self.AUDIO_LENGTH, self.AUDIO_FEATURE_LENGTH, 1))
 
-        layer_h1 = Conv2D(32, (3,3), use_bias=False, activation='relu', padding='same', kernel_initializer='he_normal')(input_data) # 卷积层
+        layer_h1 = SeparableConv2D(32, (3,3), use_bias=False, activation='relu', padding='same', kernel_initializer='he_normal')(input_data) # 卷积层
         layer_h1 = Dropout(0.05)(layer_h1)
-        layer_h2 = Conv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h1) # 卷积层
+        layer_h2 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h1) # 卷积层
         layer_h3 = MaxPooling2D(pool_size=2, strides=None, padding="valid")(layer_h2) # 池化层
         layer_h3 = Dropout(0.05)(layer_h3)
 
-        layer_h4 = Conv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h3) # 卷积层
+        layer_h4 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h3) # 卷积层
         layer_h4 = Dropout(0.1)(layer_h4)
-        layer_h5 = Conv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h4) # 卷积层
+        layer_h5 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h4) # 卷积层
         layer_h6 = MaxPooling2D(pool_size=2, strides=None, padding="valid")(layer_h5) # 池化层
         layer_h6 = Dropout(0.1)(layer_h6)
 
-        layer_h7 = Conv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h6) # 卷积层
+        layer_h7 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h6) # 卷积层
         layer_h7 = Dropout(0.15)(layer_h7)
-        layer_h8 = Conv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h7) # 卷积层
+        layer_h8 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h7) # 卷积层
         layer_h9 = MaxPooling2D(pool_size=2, strides=None, padding="valid")(layer_h8) # 池化层
         layer_h9 = Dropout(0.15)(layer_h9)
 
-        #layer_h10 = Conv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h9) # 卷积层
+        #layer_h10 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h9) # 卷积层
         #layer_h10 = Dropout(0.2)(layer_h10)
-        #layer_h11 = Conv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h10) # 卷积层
+        #layer_h11 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h10) # 卷积层
         #layer_h12 = MaxPooling2D(pool_size=1, strides=None, padding="valid")(layer_h11) # 池化层
         #layer_h12 = Dropout(0.2)(layer_h12)
 
-        #layer_h13 = Conv2D(16, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h12) # 卷积层
+        #layer_h13 = SeparableConv2D(16, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h12) # 卷积层
         #layer_h13 = Dropout(0.2)(layer_h13)
-        #layer_h14 = Conv2D(16, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h13) # 卷积层
+        #layer_h14 = SeparableConv2D(16, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h13) # 卷积层
         #layer_h15 = MaxPooling2D(pool_size=1, strides=None, padding="valid")(layer_h14) # 池化层
         #layer_h15 = Dropout(0.2)(layer_h15)
 
-        layer_h10 = Conv2D(32, (1,1), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h9) # 卷积层
+        layer_h10 = SeparableConv2D(32, (1,1), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h9) # 卷积层
+        #layer_h10 = SeparableConv2D(32, (1,1), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h9) # 卷积层
         layer_h11 = MaxPooling2D(pool_size=1, strides=None, padding="valid")(layer_h10) # 池化层
         print('layer_h11:', layer_h11.shape)
         layer_h12 = Reshape((layer_h11.shape[1], layer_h11.shape[2] * layer_h11.shape[3]))(layer_h11) #Reshape层

@@ -14,10 +14,11 @@ from general_function.gen_func import *
 # LSTM_CNN
 import numpy as np
 import random
+import tensorflow.keras as keras
 
-from tensorflow.keras.models import Model
+from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Dense, Dropout, Input, Reshape, BatchNormalization, Flatten
-from tensorflow.keras.layers import Lambda, TimeDistributed, Activation,Conv2D, MaxPooling2D #, Merge
+from tensorflow.keras.layers import Lambda, TimeDistributed, Activation,SeparableConv2D, MaxPooling2D #, Merge
 from tensorflow.keras import backend as K
 from tensorflow.keras.optimizers import SGD, Adadelta, Adam
 
@@ -26,9 +27,7 @@ import config
 
 abspath = ''
 ModelName='251'
-
-import MobileSpeechModel
-import VGGBaseModel
+#NUM_GPU = 2
 
 class ModelSpeech(): # 语音模型类
     def __init__(self, datapath):
@@ -40,9 +39,7 @@ class ModelSpeech(): # 语音模型类
         self.label_max_string_length = 64
         self.AUDIO_LENGTH = 1000
         self.AUDIO_FEATURE_LENGTH = config.AUDIO_FEATURE_LENGTH
-        speechmodel = MobileSpeechModel.SpeechModel()
-        #speechmodel = VGGBaseModel.SpeechModel()
-        self.base_model, self._model = speechmodel.create_model(self.AUDIO_LENGTH, self.AUDIO_FEATURE_LENGTH, self.MS_OUTPUT_SIZE, self.label_max_string_length)
+        self._model, self.base_model = self.CreateModel()
 
         self.datapath = datapath
         self.slash = ''
@@ -57,6 +54,104 @@ class ModelSpeech(): # 语音模型类
         if(self.slash != self.datapath[-1]): # 在目录路径末尾增加斜杠
             self.datapath = self.datapath + self.slash
 
+
+    def CreateModel(self):
+        '''
+        定义CNN/LSTM/CTC模型，使用函数式模型
+        输入层：200维的特征值序列，一条语音数据的最大长度设为1600（大约16s）
+        隐藏层：卷积池化层，卷积核大小为3x3，池化窗口大小为2
+        隐藏层：全连接层
+        输出层：全连接层，神经元数量为self.MS_OUTPUT_SIZE，使用softmax作为激活函数，
+        CTC层：使用CTC的loss作为损失函数，实现连接性时序多输出
+
+        '''
+
+        input_data = Input(name='the_input', shape=(self.AUDIO_LENGTH, self.AUDIO_FEATURE_LENGTH, 1))
+
+        layer_h1 = SeparableConv2D(32, (3,3), use_bias=False, activation='relu', padding='same', kernel_initializer='he_normal')(input_data) # 卷积层
+        layer_h1 = Dropout(0.05)(layer_h1)
+        layer_h2 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h1) # 卷积层
+        layer_h3 = MaxPooling2D(pool_size=2, strides=None, padding="valid")(layer_h2) # 池化层
+
+        layer_h3 = Dropout(0.05)(layer_h3)
+        layer_h4 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h3) # 卷积层
+        layer_h4 = Dropout(0.1)(layer_h4)
+        layer_h5 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h4) # 卷积层
+        layer_h6 = MaxPooling2D(pool_size=2, strides=None, padding="valid")(layer_h5) # 池化层
+
+        layer_h6 = Dropout(0.1)(layer_h6)
+        layer_h7 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h6) # 卷积层
+        layer_h7 = Dropout(0.15)(layer_h7)
+        layer_h8 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h7) # 卷积层
+        layer_h9 = MaxPooling2D(pool_size=2, strides=None, padding="valid")(layer_h8) # 池化层
+
+        layer_h9 = Dropout(0.15)(layer_h9)
+        layer_h10 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h9) # 卷积层
+        layer_h10 = Dropout(0.2)(layer_h10)
+        layer_h11 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h10) # 卷积层
+        layer_h12 = MaxPooling2D(pool_size=1, strides=None, padding="valid")(layer_h11) # 池化层
+
+        #layer_h12 = Dropout(0.2)(layer_h12)
+        #layer_h13 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h12) # 卷积层
+        #layer_h13 = Dropout(0.2)(layer_h13)
+        #layer_h14 = SeparableConv2D(32, (3,3), use_bias=True, activation='relu', padding='same', kernel_initializer='he_normal')(layer_h13) # 卷积层
+        #layer_h15 = MaxPooling2D(pool_size=1, strides=None, padding="valid")(layer_h14) # 池化层
+
+        #layer_h16 = Reshape((200, 3200))(layer_h15) #Reshape层
+        layerx = layer_h12
+        print('layerx', layerx)
+        layer_h16 = Reshape((layerx.shape[1], layerx.shape[2]* layerx.shape[3]))(layerx) #Reshape层
+        #layer_h16 = Reshape((125, 800))(layer_h12) #Reshape层
+        #layer_h16 = Flatten()(layer_h12) #Reshape层
+        print('layer_h16:', layer_h16)
+        #layer_h5 = LSTM(256, activation='relu', use_bias=True, return_sequences=True)(layer_h4) # LSTM层
+        #layer_h16 = Dropout(0.3)(layer_h16)
+        #layer_h17 = Dense(32, activation="relu", use_bias=True, kernel_initializer='he_normal')(layer_h16) # 全连接层
+        #layer_h17 = Dropout(0.3)(layer_h16)
+
+        layer_h18 = Dense(self.MS_OUTPUT_SIZE, use_bias=True, kernel_initializer='he_normal')(layer_h16) # 全连接层
+
+        y_pred = Activation('softmax', name='Activation0')(layer_h18)
+        print('y_pred', y_pred)
+        model_data = Model(inputs = input_data, outputs = y_pred)
+        model_data.summary()
+
+        labels = Input(name='the_labels', shape=[self.label_max_string_length], dtype='float32')
+        input_length = Input(name='input_length', shape=[1], dtype='int64')
+        label_length = Input(name='label_length', shape=[1], dtype='int64')
+        # Keras doesn't currently support loss funcs with extra parameters
+        # so CTC loss is implemented in a lambda layer
+
+        #layer_out = Lambda(ctc_lambda_func,output_shape=(self.MS_OUTPUT_SIZE, ), name='ctc')([y_pred, labels, input_length, label_length])#(layer_h6) # CTC
+        loss_out = Lambda(self.ctc_lambda_func, output_shape=(1,), name='ctc')([y_pred, labels, input_length, label_length])
+
+        model = Model(inputs=[input_data, labels, input_length, label_length], outputs=loss_out)
+        model.summary()
+
+        # clipnorm seems to speeds up convergence
+        #sgd = SGD(lr=0.0001, decay=1e-6, momentum=0.9, nesterov=True, clipnorm=5)
+        #opt = Adadelta(lr = 0.01, rho = 0.95, epsilon = 1e-06)
+        opt = Adam(lr = 0.001, beta_1 = 0.9, beta_2 = 0.999, decay = 0.0, epsilon = 10e-8)
+        #model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer=sgd)
+        model.compile(loss={'ctc': lambda y_true, y_pred: y_pred}, optimizer = opt)
+
+        # captures output of softmax so we can decode the output during visualization
+        #test_func = K.function([input_data], [y_pred])
+
+        #print('[*提示] 创建模型成功，模型编译成功')
+        print('[*Info] Create Model Successful, Compiles Model Successful. ')
+        return model, model_data
+
+    def ctc_lambda_func(self, args):
+        y_pred, labels, input_length, label_length = args
+
+        y_pred = y_pred[:, :, :]
+        print(y_pred)
+        #y_pred = y_pred[:, 2:, :]
+        return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
+
+
+
     def TrainModel(self, datapath, epoch = 2, save_step = 1000, batch_size = 32, filename = abspath + 'model_speech/m' + ModelName + '/speech_model'+ModelName):
         '''
         训练模型
@@ -67,7 +162,9 @@ class ModelSpeech(): # 语音模型类
             filename: 默认保存文件名，不含文件后缀名
         '''
         data=DataSpeech(datapath, 'train')
+
         num_data = data.GetDataNum() # 获取数据的数量
+
         yielddatas = data.data_genetator(batch_size, self.AUDIO_LENGTH)
 
         for epoch in range(epoch): # 迭代轮数
@@ -242,7 +339,7 @@ class ModelSpeech(): # 语音模型类
         #data = DataSpeech('E:\\语音数据集')
         #data.LoadDataList('dev')
         # 获取输入特征
-        data_input = GetMfccFeature(wavsignal, fs, config.AUDIO_MFCC_FEATURE_LENGTH)
+        data_input = GetMfccFeature(wavsignal, fs, config.AUDIO_FEATURE_LENGTH)
         #t0=time.time()
         #data_input = GetFrequencyFeature3(wavsignal, fs)
         #t1=time.time()

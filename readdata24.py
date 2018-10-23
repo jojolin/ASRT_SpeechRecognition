@@ -142,7 +142,6 @@ class DataSpeech():
 
                 # 获取输出特征
                 feat_out=[]
-                #print("数据编号",n_start,filename)
                 for i in list_symbol:
                         if ''!=i:
                                 n=self.SymbolToNum(i)
@@ -150,20 +149,10 @@ class DataSpeech():
                                 #feat_out.append(v)
                                 feat_out.append(n)
 
-                #print('feat_out:',feat_out)
-                #print('wavsignal:', wavsignal.shape)
                 # 获取输入特征
-                data_input = GetMfccFeature(wavsignal,fs, numcep=config.AUDIO_FEATURE_LENGTH)
+                data_input = GetMfccFeature(wavsignal,fs, numcep=config.AUDIO_MFCC_FEATURE_LENGTH)
                 #data_input = GetFrequencyFeature3(wavsignal,fs)
-                #data_input = np.array(data_input)
                 data_input = data_input.reshape(data_input.shape[0], data_input.shape[1], 1)
-                #print('data input reshape:', data_input.shape)
-                #arr_zero = np.zeros((1, 39), dtype=np.int16) #一个全是0的行向量
-
-                #while(len(data_input)<1600): #长度不够时补全到1600
-                #       data_input = np.row_stack((data_input,arr_zero))
-
-                #data_input = data_input.T
                 data_label = np.array(feat_out)
                 return data_input, data_label
 
