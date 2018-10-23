@@ -66,11 +66,10 @@ class DataSetManager(object):
             syllable = syllable_index[tag]
 
             # TODO: debug
-            data_input = np.random.random((300, config.AUDIO_FEATURE_LENGTH))
+            #data_input = np.random.random((300, config.AUDIO_FEATURE_LENGTH))
             print(wavfp)
-            #wavsignal, fs = read_wav_data(wavfp)
-            #data_input = GetMfccFeature(wavsignal, fs, numcep=config.AUDIO_MFCC_FEATURE_LENGTH)
-            #print(wavfp)
+            wavsignal, fs = read_wav_data(self.data_path + wavfp)
+            data_input = GetMfccFeature(wavsignal, fs, numcep=config.AUDIO_MFCC_FEATURE_LENGTH)
             data_input = data_input.reshape(data_input.shape[0], data_input.shape[1], 1)
             # 获取输入特征
             syllable_num = list(map(self.get_symbol_num, syllable))
