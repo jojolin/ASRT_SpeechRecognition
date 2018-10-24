@@ -34,7 +34,7 @@ class ModelSpeech(): # 语音模型类
         默认输出的拼音的表示大小是1422，即1421个拼音+1个空白块
         '''
         self.MS_OUTPUT_SIZE = 1422 #拼音类别是1421个，加上一个空白块，将output_dim设置为1422即可
-        self.label_max_string_length = 64
+        self.label_max_string_length = config.LABEL_LENGTH
         self.AUDIO_LENGTH = 1600
         self.AUDIO_FEATURE_LENGTH = config.AUDIO_FEATURE_LENGTH
         self.datasetmanager = DataSetManager()
@@ -158,7 +158,7 @@ class ModelSpeech(): # 语音模型类
         r1 = self.Predict(data_input, input_length)
         #t3=time.time()
         #print('time cost:',t3-t2)
-        list_symbol_dic = self.datasetmanager.get_symbol_list() # 获取拼音列表
+        list_symbol_dic = self.datasetmanager.list_symbol # 获取拼音列表
         r_str = []
         for i in r1:
             r_str.append(list_symbol_dic[i])

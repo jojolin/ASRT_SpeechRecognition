@@ -10,8 +10,10 @@ class DataSetManager(object):
 
     def __init__(self, data_path='./dataset/'):
         self.data_path = data_path
-        self.list_symbol = self.get_symbol_list() # 全部汉语拼音符号列表
+        self.list_symbol = self.get_c_symbol_list() # 全部汉语拼音符号列表
+        #self.list_symbol = self.get_symbol_list() # 全部汉语拼音符号列表
         self.data_gen = self.data_generator_()
+        self.symbol_num = len(self.list_symbol)
 
     def next_data(self):
         return next(self.data_gen)
@@ -29,7 +31,7 @@ class DataSetManager(object):
 
         while True:
             X = np.zeros((batch_size, audio_length, config.AUDIO_FEATURE_LENGTH, 1), dtype = np.float)
-            y = np.zeros((batch_size, 64), dtype=np.int16)
+            y = np.zeros((batch_size, config.LABEL_LENGTH), dtype=np.int16)
             input_length = []
             label_length = []
             i = 0
@@ -38,6 +40,11 @@ class DataSetManager(object):
                 if data_input.shape[0] * 1.05 > audio_length:
                     #print('ignore:', data_input.shape)
                     continue
+
+                # TODO: debug
+                #print(data_labels)
+                #for x in data_labels:
+                #    print(self.list_symbol[x], )
 
                 input_length.append(data_input.shape[0] // 8 + data_input.shape[0] % 8)
                 X[i,0:len(data_input)] = data_input
@@ -76,7 +83,7 @@ class DataSetManager(object):
             data_input = data_input.reshape(data_input.shape[0], data_input.shape[1], 1)
             # 获取输入特征
             try:
-                syllable_num = list(map(self.get_symbol_num, syllable))
+                syllable_num = list(map(self.get_symbol_num, ' '.join(syllable)))
             except ValueError as ex:
                 print(ex)
                 continue
@@ -160,6 +167,15 @@ class DataSetManager(object):
         print(len(syllable_index))
         return wav_index, syllable_index
 
+    def get_c_symbol_list(self):
+        '''
+        字母列表
+        '''
+        alpha = list(map(chr, range(ord('a'), ord('z')+1)))
+        alpha.append(' ')
+        alpha.append('_')
+        return alpha
+
     def get_symbol_list(self):
         '''
         加载拼音符号列表，用于标记符号
@@ -175,13 +191,12 @@ class DataSetManager(object):
                 list_symbol.append(txt_l[0])
         txt_obj.close()
         list_symbol.append('_')
-        self.symbol_num = len(list_symbol)
         return list_symbol
 
     def get_symbol_num(self, symbol):
-        if symbol != '':
+        if symbol in self.list_symbol:
             return self.list_symbol.index(symbol)
-        return self.symbol_num
+        return self.list_symbol.index(' ')
 
 if __name__ == '__main__':
     manager = DataSetManager()
@@ -195,3 +210,5 @@ if __name__ == '__main__':
     data_gen = manager.data_generator()
     print(len(next(data_gen)[1]))
     #print(next(data_gen)[1])
+    #manager.get_symbol_list()
+    #print(list(map(manager.get_symbol_num, 'zhao4 dao')))
