@@ -13,6 +13,9 @@ class DataSetManager(object):
         self.list_symbol = self.get_symbol_list() # 全部汉语拼音符号列表
         self.data_gen = self.data_generator_()
 
+    def next_data(self):
+        return next(self.data_gen)
+
     def data_generator(self, batch_size=32, audio_length = 1600):
         '''
         数据生成器函数
@@ -31,7 +34,7 @@ class DataSetManager(object):
             label_length = []
             i = 0
             while i < batch_size:
-                data_input, data_labels = next(self.data_gen)
+                data_input, data_labels = self.next_data()
                 if data_input.shape[0] * 1.05 > audio_length:
                     #print('ignore:', data_input.shape)
                     continue
@@ -48,15 +51,15 @@ class DataSetManager(object):
 
     def data_generator_(self):
         while True:
+            wav_index, syllable_index = self.load_primewords()
+            for x in self.dataset_generator(wav_index, syllable_index):
+                yield x
+
             wav_index, syllable_index = self.load_thchs30()
             for x in self.dataset_generator(wav_index, syllable_index):
                 yield x
 
             wav_index, syllable_index = self.load_stcmd()
-            for x in self.dataset_generator(wav_index, syllable_index):
-                yield x
-
-            wav_index, syllable_index = self.load_primewords()
             for x in self.dataset_generator(wav_index, syllable_index):
                 yield x
 
@@ -67,7 +70,7 @@ class DataSetManager(object):
 
             # TODO: debug
             #data_input = np.random.random((300, config.AUDIO_FEATURE_LENGTH))
-            print(wavfp)
+            #print(wavfp)
             wavsignal, fs = read_wav_data(self.data_path + wavfp)
             data_input = GetMfccFeature(wavsignal, fs, numcep=config.AUDIO_MFCC_FEATURE_LENGTH)
             data_input = data_input.reshape(data_input.shape[0], data_input.shape[1], 1)

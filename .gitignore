@@ -18,3 +18,9 @@ webapi/
 
 speech.tfkeras.h5
 speech.tfkeras.h5.tflite
+
+*.swp
+
+dataset/ST-CMDS-20170001_1-OS
+dataset/data_thchs30
+dataset/primewords_md_2018_set1

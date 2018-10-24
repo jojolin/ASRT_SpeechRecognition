@@ -35,7 +35,7 @@ class SpeechModel(object):
         for depth, stride in zip(
                 [64, 64, 128, 128, 256, 256],
                 [2,  1,   2,   1,   2,   1]):
-            layer_x = SeparableConv2D(depth, (3,3), stride, use_bias=True, activation='relu', padding='same')(layer_x)
+            layer_x = SeparableConv2D(depth, (3,3), stride, use_bias=True, depth_multiplier=1, activation='relu', padding='same')(layer_x)
             #layer_x = Conv2D(depth, (1,1), 1, use_bias=True, activation='relu', padding='same')(layer_x) # 卷积层
 
         #layer_x2 = MaxPooling2D(pool_size=2, strides=None, padding="valid")(layer_x)

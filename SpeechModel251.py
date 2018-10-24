@@ -68,8 +68,8 @@ class ModelSpeech(): # 语音模型类
                     break
 
                 self.SaveModel(comment='_e_'+str(epoch)+'_step_'+str(n_step * save_step))
-                self.TestModel(self.datapath, data_count=8)
-                self.TestModel(self.datapath, data_count=8)
+                self.TestModel(data_count=8)
+                self.TestModel(data_count=8)
 
     def LoadModel(self,filename = abspath + 'model_speech/m'+ModelName+'/speech_model'+ModelName+'.model'):
         '''
@@ -102,8 +102,9 @@ class ModelSpeech(): # 语音模型类
         words_num = 0
         word_error_num = 0
 
-        test_data = next(self.datasetmanager.data_generator(data_count, self.AUDIO_LENGTH))
-        for data_input, data_labels in test_data:
+        for x in range(0, data_count):
+            test_data = self.datasetmanager.next_data()
+            data_input, data_labels = test_data
             #data_input, data_labels = data.GetData((ran_num + i) % num_data)  # 从随机数开始连续向后取一定数量数据
 
             # 当输入的wav文件长度过长时自动跳过该文件，转而使用下一个wav文件来运行
@@ -157,7 +158,7 @@ class ModelSpeech(): # 语音模型类
         r1 = self.Predict(data_input, input_length)
         #t3=time.time()
         #print('time cost:',t3-t2)
-        list_symbol_dic = self.datasetmanager.get_symbol_list(self.datapath) # 获取拼音列表
+        list_symbol_dic = self.datasetmanager.get_symbol_list() # 获取拼音列表
         r_str = []
         for i in r1:
             r_str.append(list_symbol_dic[i])
