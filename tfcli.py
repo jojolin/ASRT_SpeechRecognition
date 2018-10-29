@@ -56,14 +56,3 @@ with tf.Graph().as_default():
         print('r1:', type(r1), r1)
         r1=r1[0]
         print('r1:', type(r1), r1)
-
-        # r1 = self.Predict(data_input, input_length)
-        # list_symbol_dic = GetSymbolList('dict.txt') # 获取拼音列表
-        # r_str=[]
-        # for i in r1:
-        # 	r_str.append(list_symbol_dic[i])
-        # return r_str
-
-        # r = recognize_speech(wavsignal, fs)
-                # print(r)
-

@@ -7,6 +7,9 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Dense, Input, Conv2D, SeparableConv2D, Lambda, Reshape, Activation, AvgPool2D, Dropout, MaxPooling2D
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras import backend as K
+from tensorflow.python.ops import ctc_ops as ctc
+from tensorflow.python.ops import math_ops, array_ops
+from tensorflow.keras.backend import ctc_label_dense_to_sparse, epsilon
 
 class SpeechModel(object):
     '''
@@ -67,6 +70,16 @@ class SpeechModel(object):
     def ctc_lambda_func(self, args):
         y_pred, labels, input_length, label_length = args
         y_pred = y_pred[:, :, :]
-        #y_pred = y_pred[:, 2:, :]
-        return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
+
+        label_length = math_ops.to_int32(array_ops.squeeze(label_length, axis=-1))
+        input_length = math_ops.to_int32(array_ops.squeeze(input_length, axis=-1))
+
+        sparse_labels = math_ops.to_int32(ctc_label_dense_to_sparse(labels, label_length))
+
+        y_pred = math_ops.log(array_ops.transpose(y_pred, perm=[1, 0, 2]) + epsilon())
+
+        return array_ops.expand_dims(
+			ctc.ctc_loss(
+				inputs=y_pred, labels=sparse_labels, sequence_length=input_length, ignore_longer_outputs_than_inputs=True), 1)
+        #return K.ctc_batch_cost(labels, y_pred, input_length, label_length)
 

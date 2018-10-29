@@ -20,6 +20,7 @@ speech.tfkeras.h5
 speech.tfkeras.h5.tflite
 
 *.swp
+*.swo
 
 dataset/ST-CMDS-20170001_1-OS
 dataset/data_thchs30

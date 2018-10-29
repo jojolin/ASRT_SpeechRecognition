@@ -10,10 +10,11 @@ class DataSetManager(object):
 
     def __init__(self, data_path='./dataset/'):
         self.data_path = data_path
-        self.list_symbol = self.get_c_symbol_list() # 全部汉语拼音符号列表
-        #self.list_symbol = self.get_symbol_list() # 全部汉语拼音符号列表
+        #self.list_symbol = self.get_c_symbol_list() # 全部汉语拼音符号列表
+        self.list_symbol = self.get_symbol_list() # 全部汉语拼音符号列表
         self.data_gen = self.data_generator_()
         self.symbol_num = len(self.list_symbol)
+        self.numbers = ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9')
 
     def next_data(self):
         return next(self.data_gen)
@@ -58,15 +59,15 @@ class DataSetManager(object):
 
     def data_generator_(self):
         while True:
-            wav_index, syllable_index = self.load_primewords()
-            for x in self.dataset_generator(wav_index, syllable_index):
-                yield x
-
             wav_index, syllable_index = self.load_thchs30()
             for x in self.dataset_generator(wav_index, syllable_index):
                 yield x
 
             wav_index, syllable_index = self.load_stcmd()
+            for x in self.dataset_generator(wav_index, syllable_index):
+                yield x
+
+            wav_index, syllable_index = self.load_primewords()
             for x in self.dataset_generator(wav_index, syllable_index):
                 yield x
 
@@ -83,7 +84,11 @@ class DataSetManager(object):
             data_input = data_input.reshape(data_input.shape[0], data_input.shape[1], 1)
             # 获取输入特征
             try:
-                syllable_num = list(map(self.get_symbol_num, ' '.join(syllable)))
+                #print(syllable)
+                als = [x[:-1] for x in syllable]
+                #print(als)
+                syllable_num = list(map(self.get_symbol_num, als))
+                #print(syllable_num)
             except ValueError as ex:
                 print(ex)
                 continue
@@ -172,8 +177,6 @@ class DataSetManager(object):
         字母列表
         '''
         alpha = list(map(chr, range(ord('a'), ord('z')+1)))
-        alpha.append(' ')
-        alpha.append('_')
         return alpha
 
     def get_symbol_list(self):
@@ -196,7 +199,7 @@ class DataSetManager(object):
     def get_symbol_num(self, symbol):
         if symbol in self.list_symbol:
             return self.list_symbol.index(symbol)
-        return self.list_symbol.index(' ')
+        return self.list_symbol.index('_')
 
 if __name__ == '__main__':
     manager = DataSetManager()

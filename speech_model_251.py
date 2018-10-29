@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-@author: nl8590687
-"""
+
 import time
 
 from general_function.file_wav import read_wav_data, GetMfccFeature
@@ -17,15 +15,14 @@ from tensorflow.keras.layers import Lambda, TimeDistributed, Activation,Conv2D, 
 from tensorflow.keras import backend as K
 from tensorflow.keras.optimizers import SGD, Adadelta, Adam
 
-#from readdata24 import DataSpeech
 from dataset_manager import DataSetManager
 import config
 
 abspath = ''
 ModelName='251'
 
-import MobileSpeechModel
-#import VGGBaseModel
+import mobilebase_model
+#import vggbase_model
 
 class ModelSpeech(): # 语音模型类
     def __init__(self, datapath):
@@ -33,13 +30,13 @@ class ModelSpeech(): # 语音模型类
         初始化
         默认输出的拼音的表示大小是1422，即1421个拼音+1个空白块
         '''
-        self.MS_OUTPUT_SIZE = 1422 #拼音类别是1421个，加上一个空白块，将output_dim设置为1422即可
+        self.MS_OUTPUT_SIZE = 1423 #拼音1421 + 1个特殊字符(为了处理音频数据需要) + 1个空白块
         self.label_max_string_length = config.LABEL_LENGTH
         self.AUDIO_LENGTH = 1600
         self.AUDIO_FEATURE_LENGTH = config.AUDIO_FEATURE_LENGTH
         self.datasetmanager = DataSetManager()
-        speechmodel = MobileSpeechModel.SpeechModel()
-        #speechmodel = VGGBaseModel.SpeechModel()
+        speechmodel = mobilebase_model.SpeechModel()
+        #speechmodel = vggbase_model.SpeechModel()
         self.base_model, self._model = speechmodel.create_model(self.AUDIO_LENGTH, self.AUDIO_FEATURE_LENGTH, self.MS_OUTPUT_SIZE, self.label_max_string_length)
 
         self.datapath = datapath
@@ -184,6 +181,3 @@ class ModelSpeech(): # 语音模型类
         返回keras model
         '''
         return self._model
-
-if __name__== '__main__':
-    pass
