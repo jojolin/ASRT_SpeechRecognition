@@ -7,8 +7,7 @@
 import time
 import sys
 
-from SpeechModel251 import ModelSpeech
-from LanguageModel import ModelLanguage
+from speech_model_251 import ModelSpeech
 
 model = sys.argv[1]
 sound_fp = sys.argv[2:]
@@ -17,9 +16,6 @@ datapath = 'data/'
 modelpath = 'model_speech/'
 ms = ModelSpeech(datapath)
 ms.LoadModel(model)
-
-#ml = ModelLanguage('model_language')
-#ml.LoadModel()
 
 pinyin = ms.RecognizeSpeech_FromFile(*sound_fp)
 print('*[提示] 语音识别结果：\n',pinyin)
